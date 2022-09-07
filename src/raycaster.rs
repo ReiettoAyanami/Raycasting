@@ -75,7 +75,7 @@ impl Raycaster{
 
         d = f32::max(d - offset, 0.0);
 
-        d /= 1000.0;
+        d /= 100.0;
 
         let a:f32 = get_angle_between(self.position, position);
 

@@ -22,7 +22,7 @@ fn main() {
 
     //let mut r = Ray::new_from_angle(Vector2::new(100f32, 100f32), 50f32,0.0, false, Color::BLUE);
 
-    let mut raycaster: Raycaster = Raycaster::new(Vector2::new(100f32,100f32), std::f32::consts::FRAC_PI_6, 360f32.to_radians(), 1.0/36.0f32, WIDTH as f32, Color::WHITE);
+    let mut raycaster: Raycaster = Raycaster::new(Vector2::new(100f32,100f32), std::f32::consts::FRAC_PI_6, 70f32.to_radians(), 0.0001, WIDTH as f32, Color::WHITE);
 
 
     let mut obstacles: Vec<Ray> = vec![];
