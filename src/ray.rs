@@ -6,7 +6,7 @@ use std::collections::btree_set::Intersection;
 
 
 
-
+#[derive(Debug,Clone, Copy)]
 pub struct Ray{
 
     pub p0:Vector2,
@@ -22,6 +22,8 @@ pub struct Ray{
     
 
 }
+
+pub const  NULL_RAY: Ray = Ray{p0: Vector2::new(f32::NAN, f32::NAN), p1: Vector2::new(f32::NAN, f32::NAN), is_obstacle: false, render_color: Color::BLACK, length:f32::NAN};
 
 impl Ray {
     
@@ -105,9 +107,9 @@ impl Ray {
 
     }
 
-    pub fn intersect_segment(&mut self, r: &mut Ray) -> (bool, Vector2){
+    pub fn intersect_segment(&mut self, r: &mut Ray) -> (bool, Vector2, Ray){
 
-        if !r.is_obstacle{ return (false, Vector2::new(f32::NAN, f32::NAN))}
+        if !r.is_obstacle{ return (false, Vector2::new(f32::NAN, f32::NAN), NULL_RAY)}
 
 
         let intersection = self.intersect_line(r).1;
@@ -119,24 +121,31 @@ impl Ray {
 
         if ((r0.x > 0.0 && r0.x < 1.0) || (r0.y > 0.0 && r0.y < 1.0)) && ((r1.x > 0.0 && r1.x < 1.0) || (r1.y > 0.0 && r1.y < 1.0)){
 
-            return  (true, intersection);
+            return  (true, intersection, *r);
 
         }else {
 
-            return (false, Vector2::new(std::f32::NAN, std::f32::NAN));
+            return (false, Vector2::new(std::f32::NAN, std::f32::NAN), NULL_RAY);
         }
 
     }
 
 
-    pub fn update_length(&mut self, r: &mut Ray){
+    pub fn update_length(&mut self, r: &mut Ray) -> Ray{
 
         let intersection = self.intersect_segment(r);
 
 
-        if self.p0.distance_to(intersection.1) < self.length && intersection.0 {
+        if self.p0.distance_to(intersection.1) <= self.length && intersection.0 {
             self.p0 = intersection.1;
         }
+
+
+        
+        return  *r;
+
+        
+
 
     }
 
