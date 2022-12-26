@@ -8,7 +8,7 @@ I also made another version in C++ which has less bugs and problems.
 This version is going to get a revamp soon, since i want this to be on the same level as the C++ one.
 
 The to-do list is:
-- Fixing fisheye
+- Fixing fisheye [Done]
 - Sharing objects in a better way
 - Make so every wall will be able to render with a different color.
 
