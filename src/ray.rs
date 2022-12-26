@@ -15,7 +15,8 @@ pub struct Ray{
     pub length: f32,
 
     // default WHITE
-    pub render_color: Color
+    pub render_color: Color,
+    pub angle: f32
 
 
 
@@ -23,7 +24,7 @@ pub struct Ray{
 
 }
 
-pub const  NULL_RAY: Ray = Ray{p0: Vector2::new(f32::NAN, f32::NAN), p1: Vector2::new(f32::NAN, f32::NAN), is_obstacle: false, render_color: Color::BLACK, length:f32::NAN};
+pub const NULL_RAY: Ray = Ray{p0: Vector2::new(f32::NAN, f32::NAN), p1: Vector2::new(f32::NAN, f32::NAN), is_obstacle: false, render_color: Color::BLACK, length:f32::NAN, angle:f32::NAN};
 
 impl Ray {
     
@@ -31,7 +32,12 @@ impl Ray {
     pub fn new(p0:Vector2, p1:Vector2, is_obstacle:bool, render_color: Color) -> Ray{
 
         let length = p0.distance_to(p1);
-        Ray { p0: p0, p1: p1, is_obstacle: is_obstacle, length: length, render_color: render_color}
+
+        let delta: Vector2 = p1 - p0;
+        let m:f32 = -delta.y / delta.x ;
+        let angle:f32 = m.atan();
+
+        Ray { p0: p0, p1: p1, is_obstacle: is_obstacle, length: length, render_color: render_color, angle: angle}
 
     }
 
@@ -40,13 +46,14 @@ impl Ray {
 
         let p0 = position + Vector2::new(a.cos() * length, -a.sin() * length);
 
-        Ray{p0: p0, p1: position, length: length, is_obstacle:is_obstacle, render_color: render_color}
+        Ray{p0: p0, p1: position, length: length, is_obstacle:is_obstacle, render_color: render_color, angle:a}
 
     }
 
 
     pub fn set_angle(&mut self, a:f32){
 
+        self.angle = a;
         self.p0 = self.p1 + Vector2::new(a.cos() * self.length, -a.sin() * self.length);
 
     }
@@ -72,7 +79,7 @@ impl Ray {
 
 
         self.p0 = self.p1 + Vector2::new(a.cos() * self.length, -a.sin() * self.length);
-
+        self.angle = a;
 
         a
     }
@@ -81,7 +88,7 @@ impl Ray {
     pub fn intersect_line(&mut self, r: &mut Ray) -> (bool, Vector2){
 
         if !r.is_obstacle{ return (false, Vector2::new(f32::NAN, f32::NAN))}
-
+        
         let mut is_colliding = false;
 
         let a1 = self.p1.y - self.p0.y;
@@ -120,6 +127,7 @@ impl Ray {
 
 
         if ((r0.x > 0.0 && r0.x < 1.0) || (r0.y > 0.0 && r0.y < 1.0)) && ((r1.x > 0.0 && r1.x < 1.0) || (r1.y > 0.0 && r1.y < 1.0)){
+
 
             return  (true, intersection, *r);
 

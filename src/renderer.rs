@@ -13,6 +13,8 @@ pub struct Renderer{
 
 }
 
+const WALL_H:f32 = 12000f32;
+
 impl Renderer{
 
     pub fn new(render_rectangle: Rectangle, scans: i32) -> Renderer{
@@ -32,15 +34,19 @@ impl Renderer{
 
 
     pub fn render(&mut self, d: &mut RaylibDrawHandle, raycaster: &mut Raycaster){
-        let increment = raycaster.increment;
-        let fov = increment * self.scans as f32;
+        
         let rays = raycaster.get_rays_intersection_distance();
-
+        let collisions = raycaster.get_colliding();
 
 
         for i in 0..self.scans{
-            let fixed_distance = rays[i as usize] * ((fov / 2.0) - (increment * i as f32)).cos();
-            let h = self.render_rectangle.height - fixed_distance;
+            
+            
+            let focal_angle:f32 = raycaster.rays[i as usize].angle - (raycaster.rays[0].angle -(raycaster.fov/2f32));
+            
+
+            let fixed_distance = raycaster.rays[i as usize].p1.distance_to(raycaster.rays[i as usize].p0) * focal_angle.cos();
+            let h = WALL_H / fixed_distance;
             
             
 

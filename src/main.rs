@@ -8,7 +8,7 @@ use utils::*;
 use ray::Ray;
 
 use renderer::Renderer;
-use raycaster::Raycaster;
+use raycaster::Raycaster;               
 
 pub const WIDTH:i32 = 800;
 pub const HEIGHT:i32 = 600;
@@ -18,15 +18,12 @@ fn main() {
     
     let (mut rl, thread) = raylib::init()
     .size(WIDTH * 2, HEIGHT)
-    .title("Raycasting")
+    .title("Raycasting Rust")
     .msaa_4x()
     .build(); 
 
 
-
-    //let mut r = Ray::new_from_angle(Vector2::new(100f32, 100f32), 50f32,0.0, false, Color::BLUE);
-
-    let mut raycaster: Raycaster = Raycaster::new(Vector2::new(100f32,100f32), std::f32::consts::FRAC_PI_6,60f32.to_radians(), 0.006225, WIDTH as f32, Color{r: 255, g: 255, b: 255, a: 255});
+    let mut raycaster: Raycaster = Raycaster::new(Vector2::new(100f32,100f32), std::f32::consts::FRAC_PI_6,90f32.to_radians(), 800, WIDTH as f32, Color{r: 255, g: 255, b: 255, a: 255});
     
     let mut obstacles: Vec<Ray> = vec![];
 
@@ -72,6 +69,7 @@ fn main() {
         raycaster.point_to(mouse_pos);
 
         
+        
 
         for obstacle in &mut obstacles{
             
@@ -80,12 +78,12 @@ fn main() {
 
 
         }
-        //println!("{}", d.get_fps());
+        
 
-
+        d.draw_text(&format!("{}", d.get_fps()), WIDTH / 2, 0, 20, Color::RAYWHITE);
         //println!("{:?}/n/n/n",raycaster.get_rays_intersection_distance());
         renderer.render(&mut d, &mut raycaster);
-        raycaster.render_fov(&mut d);
+        raycaster.render(&mut d);
 
 
         

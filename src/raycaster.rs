@@ -1,6 +1,8 @@
 use crate::{ray::{Ray, self, NULL_RAY}, main};
+use raylib::ffi::KeyboardKey::*;
 use raylib::prelude::*;
 use crate::utils::*;
+use std::f32::consts::PI;
 
 
 
@@ -12,38 +14,37 @@ pub struct Raycaster{
     pub render_color: Color,
     pub rays: Vec<ray::Ray>,
     hitbox_size: f32,
-    pub increment: f32, 
     starting_angle: f32,
     velocity: Vector2,
-    collisions: Vec<ray::Ray>
-
+    collisions: Vec<ray::Ray>,
+    pub fov:f32
 }
 
 
 impl Raycaster{
 
-    pub fn new(pos:Vector2, starting_angle: f32, fov: f32, increment:f32, ray_length:f32, render_color: Color) -> Raycaster{
+    pub fn new(pos:Vector2, starting_angle: f32, fov: f32,n_rays:i32, ray_length:f32, render_color: Color) -> Raycaster{
         
-        let mut rays:Vec<ray::Ray> = vec![];
-        let mut collisions:Vec<ray::Ray> = vec![];
+        let mut rays:Vec<Ray> = vec![];
+        let mut collisions:Vec<Ray> = vec![];
+        let focal_length:f32 = 1f32 / (fov/2f32).tan();
+        let mut x:f32 = 0f32;
+        let mut t_angle:f32;
+        let angle:f32 = starting_angle - (fov / 2f32);
 
-        let n_iter: i32 = (fov / increment) as i32;
 
-        for i in 0..n_iter{
-            
-            let a: f32 = starting_angle - (increment * i as f32);
+        for i in 0..n_rays{
 
-            //let c = Color::color_from_hsv((increment * i as f32).to_degrees(), 1.0, 1.0);
+            x = 0.5f32 - (i as f32 / n_rays as f32);
+            t_angle = f32::atan2(x, focal_length);
 
-            let temp_ray: ray::Ray = ray::Ray::new_from_angle(pos, ray_length, a, false, render_color);
-
-            
-            rays.push(temp_ray);
-            collisions.push(NULL_RAY);
-
+            let r:ray::Ray = ray::Ray::new_from_angle(pos, ray_length, angle + t_angle, false, render_color);
+            rays.push(r);
+            collisions.push(ray::NULL_RAY);
         }
 
-        Raycaster{position: pos, ray_length: ray_length, render_color: render_color, rays:rays,hitbox_size: 10f32, starting_angle: starting_angle, increment:increment, velocity: Vector2 { x: 0.0, y: 0.0 }, collisions}
+
+        Raycaster{position: pos, ray_length: ray_length, render_color: render_color, rays:rays,hitbox_size: 10f32, starting_angle: starting_angle, velocity: Vector2 { x: 0.0, y: 0.0 }, collisions:collisions, fov:fov}
 
     }
 
@@ -63,20 +64,20 @@ impl Raycaster{
 
     pub fn point_to(&mut self, position:Vector2){
 
-        let fov = self.increment * (self.rays.len() -1) as f32;
-        
-        let mut relative_angle: f32 = fov / 2.0;
+        let angle:f32 = get_angle_between(self.position, position);
+        let focal_length = (1f32 / (self.fov / 2f32).tan()) / 2f32; 
+        let mut x = 0f32;
+        let mut t_angle:f32;
 
-        for ray in &mut self.rays{
+        for i in 0..self.rays.len(){
 
-            let a:f32 = relative_angle + get_angle_between(position, ray.p1);
+            x = 0.5 - (i as f32/self.rays.len() as f32);
+            t_angle = f32::atan2(x, focal_length);
+            self.rays[i].set_angle(angle + t_angle + PI);
 
-            relative_angle -= self.increment;
-
-            ray.set_angle(a);
 
         }
-        
+
 
 
     }   
@@ -132,6 +133,9 @@ impl Raycaster{
     
     }
 
+
+
+
     pub fn update(&mut self, r: &mut ray::Ray){
 
 
@@ -140,10 +144,15 @@ impl Raycaster{
 
         
             self.collisions[i] = self.rays[i].intersect_segment(r).2;
+
             self.rays[i].update_length(r);
+            
             
 
         }
+
+
+        
 
 
     }
@@ -151,6 +160,15 @@ impl Raycaster{
 
     pub fn render(&self, d: &mut RaylibDrawHandle){
 
+        if d.is_key_pressed(KEY_G){
+
+            for i in 0..self.collisions.len(){
+
+                println!("{:?}", self.collisions[i]);
+
+            }
+
+        }
 
         for ray in &self.rays{
             ray.render(d);
